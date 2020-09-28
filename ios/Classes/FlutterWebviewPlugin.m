@@ -531,4 +531,14 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
   [self.viewController presentViewController:alert animated:YES completion:nil];
 }
 
+#pragma mark - WKScriptMessageHandler
+//! WKWebView收到ScriptMessage时回调此方法
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    NSString *s1 = @"Consol_logger";
+    if ([message.name isEqualToString:s1]) {
+       id data = @{@"message": message.body,
+                @"messageLevel": 3};
+       [channel invokeMethod:@"onConsoleMessage" arguments:data];
+    }
+}
 @end
