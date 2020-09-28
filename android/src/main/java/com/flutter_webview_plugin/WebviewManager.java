@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -260,6 +261,15 @@ class WebviewManager {
                 args.put("progress", progress / 100.0);
                 FlutterWebviewPlugin.channel.invokeMethod("onProgressChanged", args);
             }
+            
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Map<String, Object> obj = new HashMap<>();
+                obj.put("message", consoleMessage.message());
+                obj.put("messageLevel", consoleMessage.messageLevel().ordinal());
+                channel.invokeMethod("onConsoleMessage", obj);
+                return true;
+             }
 
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 callback.invoke(origin, true, false);
