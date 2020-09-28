@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webview_plugin/src/javascript_channel.dart';
-
+import 'package:flutter_webview_plugin/src/types.dart';
 import 'javascript_message.dart';
 
 const _kChannel = 'flutter_webview_plugin';
@@ -42,6 +42,7 @@ class FlutterWebviewPlugin {
   final _onProgressChanged = new StreamController<double>.broadcast();
   final _onHttpError = StreamController<WebViewHttpError>.broadcast();
   final _onPostMessage = StreamController<JavascriptMessage>.broadcast();
+  final _onConsoleMessage = StreamController<ConsoleMessage>.broadcast();
 
   final Map<String, JavascriptChannel> _javascriptChannels =
       // ignoring warning as min SDK version doesn't support collection literals yet
@@ -83,6 +84,12 @@ class FlutterWebviewPlugin {
         _handleJavascriptChannelMessage(
             call.arguments['channel'], call.arguments['message']);
         break;
+      case 'onConsoleMessage':
+        String message = call.arguments["message"];
+	      ConsoleMessageLevel messageLevel = ConsoleMessageLevel.fromValue(call.arguments["messageLevel"]);
+        ConsoleMessage consoleMessage = ConsoleMessage(message: message, messageLevel: messageLevel);
+	      _onConsoleMessage.add(consoleMessage);
+        break;
     }
   }
 
@@ -110,6 +117,8 @@ class FlutterWebviewPlugin {
   Stream<double> get onScrollXChanged => _onScrollXChanged.stream;
 
   Stream<WebViewHttpError> get onHttpError => _onHttpError.stream;
+  
+  Stream<ConsoleMessage> get onConsoleMessage => _onConsoleMessage.stream;
 
   /// Start the Webview with [url]
   /// - [headers] specify additional HTTP headers
